@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Azure Blob Storage Demo</title>
+</head>
+<body>
+    <h1>ข้อมูลจาก Azure Blob Storage</h1>
+    <div id="blobData"></div>
+
+    <script type="module">
+        import { BlobServiceClient, ContainerClient } from "@azure/storage-blob";
+
+        // ข้อมูลการเชื่อมต่อกับ Azure Storage Account
+        const connectionString = "DefaultEndpointsProtocol=https;AccountName=nook1212;AccountKey=uhqpVxTTXzVw6AwU2EIjSEswFbQWOsytg/4LfBRtjRJNQG5DmQ/xt5BbUXPOgK7akuOQfEkLwTle+ASt9bfwGA==;EndpointSuffix=core.windows.net";
+        const containerName = "data";
+        const blobName = "input1";
+
+        // สร้าง BlobServiceClient
+        const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+
+        // ดึงข้อมูล Blob และแสดงบนหน้าเว็บ
+        async function getBlobData() {
+            const containerClient = blobServiceClient.getContainerClient(containerName);
+            const blobClient = containerClient.getBlobClient(blobName);
+            
+            try {
+                const response = await blobClient.download();
+                const blobContent = await blobToString(response.blobBody);
+                document.getElementById("blobData").innerText = blobContent;
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการดึงข้อมูล Blob:", error);
+            }
+        }
+
+        async function blobToString(blob) {
+            const fileReader = new FileReader();
+            return new Promise((resolve, reject) => {
+                fileReader.onloadend = () => {
+                    resolve(fileReader.result);
+                };
+                fileReader.onerror = reject;
+                fileReader.readAsText(blob);
+            });
+        }
+
+        getBlobData();
+    </script>
+</body>
+</html>
